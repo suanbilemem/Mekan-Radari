@@ -168,8 +168,8 @@
       });
 
       try {
-        const String sunucuIp = '192.168.0.19'; // Kendi bilgisayar IP adresin
-        final url = Uri.parse('http://$sunucuIp:3000/resolve');
+        final url = Uri.parse(
+        'https://yer-radari-api.onrender.com/resolve',
 
         final response = await http
             .post(

@@ -1,10 +1,12 @@
+require('dotenv').config();
+
 const express = require("express");
 const axios = require("axios");
 
 const app = express();
 app.use(express.json());
 
-const GOOGLE_API_KEY = "AIzaSyAOZkDcrrcXM0hGauoXLFncLEjb1z1DS9c";
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
 app.post("/resolve", async (req, res) => {
   try {
