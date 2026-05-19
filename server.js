@@ -8,6 +8,12 @@ app.use(express.json());
 
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
+// TEST ENDPOINT
+app.get("/", (req, res) => {
+  res.send("Yer Radarı API çalışıyor 🚀");
+});
+
+// RESOLVE ENDPOINT
 app.post("/resolve", async (req, res) => {
   try {
     const text = req.body.text || "";
@@ -64,6 +70,7 @@ app.post("/resolve", async (req, res) => {
       return res.json({
         lat,
         lng,
+        name: "Paylaşılan Konum",   // Flutter'ın beklediği alan
         source: "url"
       });
     }
@@ -136,8 +143,8 @@ app.post("/resolve", async (req, res) => {
     return res.json({
       lat,
       lng,
-      source: "places_api",
-      placeName: candidate.name
+      name: candidate.name,   // Flutter'ın beklediği alan
+      source: "places_api"
     });
 
   } catch (err) {
@@ -153,6 +160,9 @@ app.post("/resolve", async (req, res) => {
   }
 });
 
-app.listen(3000, "0.0.0.0", () => {
-  console.log("🚀 Server running on http://0.0.0.0:3000");
+// Render için zorunlu PORT kullanımı
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });

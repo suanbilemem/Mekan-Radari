@@ -169,7 +169,8 @@
 
       try {
         final url = Uri.parse(
-        'https://yer-radari-api.onrender.com/resolve',
+        'https://mekan-radari-api.onrender.com/resolve',
+        );
 
         final response = await http
             .post(
