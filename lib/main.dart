@@ -169,16 +169,15 @@
 
       try {
         final url = Uri.parse(
-        'https://mekan-radari-api.onrender.com/resolve',
+        'https://mekan-radari.onrender.com/resolve',
         );
 
-        final response = await http
-            .post(
+        final response = await http.post(
               url,
               headers: {'Content-Type': 'application/json'},
               body: jsonEncode({'text': metin}),
             )
-            .timeout(const Duration(seconds: 10));
+            .timeout(const Duration(seconds: 60));
         final data = jsonDecode(response.body);
 
         if (response.statusCode == 200 && data['lat'] != null) {
