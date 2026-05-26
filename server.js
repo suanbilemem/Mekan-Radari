@@ -4,101 +4,120 @@ const express = require("express");
 const axios = require("axios");
 
 const app = express();
+
 app.use(express.json());
 
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const GOOGLE_API_KEY =
+  process.env.GOOGLE_API_KEY;
 
-// TEST ENDPOINT
+// TEST
 app.get("/", (req, res) => {
   res.send("Yer Radarı API çalışıyor 🚀");
 });
 
-// RESOLVE ENDPOINT
+// RESOLVE
 app.post("/resolve", async (req, res) => {
-  try {
-    const text = req.body.text || "";
 
-    console.log("======================================");
+  try {
+
+    const text =
+      req.body.text || "";
+
+    console.log("=================================");
     console.log("📥 GELEN VERİ:");
     console.log(text);
 
-    // URL bul
-    const urlMatch = text.match(/https?:\/\/[^\s]+/);
-    const shortUrl = urlMatch ? urlMatch[0] : null;
+    // URL BUL
+    const urlMatch =
+      text.match(/https?:\/\/[^\s]+/);
+
+    const shortUrl =
+      urlMatch ? urlMatch[0] : null;
 
     if (!shortUrl) {
+
       return res.status(400).json({
-        error: "Paylaşılan metinde URL bulunamadı"
+        error:
+          "Paylaşılan metinde URL bulunamadı"
       });
     }
 
     console.log("🔗 KISA URL:", shortUrl);
 
-    // Redirect çöz
+    // REDIRECT ÇÖZ
     let finalUrl = shortUrl;
 
     try {
-      const response = await axios.get(shortUrl, {
-        maxRedirects: 10,
-        validateStatus: () => true,
-        headers: {
-          "User-Agent": "Mozilla/5.0"
-        }
-      });
 
-      if (response.request?.res?.responseUrl) {
-        finalUrl = response.request.res.responseUrl;
+      const redirectResponse =
+        await axios.get(shortUrl, {
+
+          maxRedirects: 10,
+
+          validateStatus: () => true,
+
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0"
+          }
+        });
+
+      if (
+        redirectResponse.request?.res
+          ?.responseUrl
+      ) {
+
+        finalUrl =
+          redirectResponse.request
+            .res.responseUrl;
       }
+
     } catch (e) {
-      console.log("⚠️ Redirect çözülemedi:", e.message);
+
+      console.log(
+        "⚠️ Redirect çözülemedi:",
+        e.message
+      );
     }
 
-    console.log("🌍 FINAL URL:", finalUrl);
+    console.log("🌍 FINAL URL:");
+    console.log(finalUrl);
 
-    // URL içinde koordinat ara
-    const coordRegex =
-      /@(-?\d+\.\d+),(-?\d+\.\d+)|!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/;
-
-    const match = finalUrl.match(coordRegex);
-
-    if (match) {
-      const lat = parseFloat(match[1] || match[3]);
-      const lng = parseFloat(match[2] || match[4]);
-
-      console.log("✅ URL'DEN KOORDİNAT:", lat, lng);
-
-      return res.json({
-        lat,
-        lng,
-        name: "Paylaşılan Konum",   // Flutter'ın beklediği alan
-        source: "url"
-      });
-    }
-
-    console.log("❌ URL içinde koordinat bulunamadı.");
-
-    // İşletme adını FINAL URL'den çıkar
+    // PLACE NAME ÇIKAR
     let placeName = null;
 
-    const placeMatch = finalUrl.match(/\/place\/([^\/]+)/);
+    const placeMatch =
+      finalUrl.match(/\/place\/([^\/]+)/);
 
-    if (placeMatch && placeMatch[1]) {
-      placeName = decodeURIComponent(placeMatch[1])
-        .replace(/\+/g, " ")
-        .trim();
+    if (
+      placeMatch &&
+      placeMatch[1]
+    ) {
 
-      console.log("🏢 URL'DEN PLACE NAME:", placeName);
+      placeName =
+        decodeURIComponent(
+          placeMatch[1]
+        )
+          .replace(/\+/g, " ")
+          .trim();
     }
 
-    // Eğer URL'den çıkarılamazsa, gelen metinden dene
+    // METİNDEN AL
     if (!placeName) {
+
       const lines = text
         .split("\n")
         .map(line => line.trim())
-        .filter(line => line.length > 0);
+        .filter(
+          line => line.length > 0
+        );
 
       for (const line of lines) {
-        if (!line.includes("http")) {
+
+        if (
+          !line.includes("http")
+        ) {
+
           placeName = line;
           break;
         }
@@ -106,64 +125,165 @@ app.post("/resolve", async (req, res) => {
     }
 
     if (!placeName) {
+
       return res.status(400).json({
-        error: "İşletme adı bulunamadı"
+        error:
+          "Yer adı bulunamadı"
       });
     }
 
-    console.log("🏢 PLACE NAME:", placeName);
-
-    // Google Places API
-    const placesResponse = await axios.get(
-      "https://maps.googleapis.com/maps/api/place/findplacefromtext/json",
-      {
-        params: {
-          input: placeName,
-          inputtype: "textquery",
-          fields: "geometry,name",
-          key: GOOGLE_API_KEY
-        }
-      }
+    console.log(
+      "🏢 PLACE NAME:",
+      placeName
     );
 
-    const candidate = placesResponse.data.candidates?.[0];
+    // GOOGLE PLACES API
+    const placesResponse =
+      await axios.get(
+        "https://maps.googleapis.com/maps/api/place/findplacefromtext/json",
+        {
+          params: {
+
+            input: placeName,
+
+            inputtype:
+              "textquery",
+
+            fields:
+              "name,geometry,types,formatted_address",
+
+            language: "tr",
+
+            key: GOOGLE_API_KEY
+          }
+        }
+      );
+
+    const candidate =
+      placesResponse.data
+        .candidates?.[0];
 
     if (!candidate) {
+
       return res.status(404).json({
-        error: "Google Places API işletmeyi bulamadı",
-        placeName
+        error:
+          "Google Places API yer bulamadı"
       });
     }
 
-    const lat = candidate.geometry.location.lat;
-    const lng = candidate.geometry.location.lng;
+    const lat =
+      candidate.geometry
+        .location.lat;
 
-    console.log("✅ PLACES API KOORDİNAT:", lat, lng);
+    const lng =
+      candidate.geometry
+        .location.lng;
+
+    const types =
+      candidate.types || [];
+
+    const fullAddress =
+      candidate.formatted_address || "";
+
+    console.log(
+      "📍 FULL ADDRESS:",
+      fullAddress
+    );
+
+    // ŞEHİR / İLÇE AYIKLA
+    let city = "";
+    let district = "";
+
+    const addressParts =
+      fullAddress
+        .split(",")
+        .map(x => x.trim());
+
+    if (
+      addressParts.length >= 2
+    ) {
+
+      district =
+        addressParts[
+          addressParts.length - 2
+        ];
+
+      city =
+        addressParts[
+          addressParts.length - 1
+        ];
+    }
+
+    console.log(
+      "🏙️ CITY:",
+      city
+    );
+
+    console.log(
+      "🏘️ DISTRICT:",
+      district
+    );
+
+    console.log(
+      "🏷️ TYPES:",
+      types
+    );
 
     return res.json({
+
       lat,
       lng,
-      name: candidate.name,   // Flutter'ın beklediği alan
-      source: "places_api"
+
+      name:
+        candidate.name,
+
+      city,
+      district,
+
+      types,
+
+      address:
+        fullAddress
     });
 
   } catch (err) {
-    console.error("🔥 SUNUCU HATASI:", err.message);
+
+    console.error(
+      "🔥 SERVER ERROR:"
+    );
+
+    console.error(err.message);
 
     if (err.response?.data) {
-      console.error(JSON.stringify(err.response.data, null, 2));
+
+      console.error(
+        JSON.stringify(
+          err.response.data,
+          null,
+          2
+        )
+      );
     }
 
     return res.status(500).json({
-      error: err.message
+
+      error:
+        err.message
     });
   }
 });
 
-// Render için zorunlu PORT kullanımı
-const PORT = process.env.PORT || 3000;
+// PORT
+const PORT =
+  process.env.PORT || 3000;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+app.listen(
+  PORT,
+  "0.0.0.0",
+  () => {
 
-});
+    console.log(
+      `🚀 Server running on port ${PORT}`
+    );
+  }
+);
