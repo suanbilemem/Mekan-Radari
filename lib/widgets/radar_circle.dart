@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 
-class RadarCircle extends StatefulWidget {
+class RadarCircle extends StatelessWidget {
+
   final bool saved;
+
   final VoidCallback onTap;
+
   final String placeName;
   final String city;
   final String district;
   final String category;
+
+  final IconData categoryIcon;
 
   const RadarCircle({
     super.key,
@@ -16,104 +21,185 @@ class RadarCircle extends StatefulWidget {
     required this.city,
     required this.district,
     required this.category,
+    required this.categoryIcon,
   });
-    @override
-  State<RadarCircle> createState() => _RadarCircleState();
-}
-
-class _RadarCircleState extends State<RadarCircle>
-    with SingleTickerProviderStateMixin {
-
-  late AnimationController _controller;
 
   @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-    @override
   Widget build(BuildContext context) {
 
-    final color = widget.saved
-        ? Colors.green
-        : Colors.red;
+    final Color borderColor =
+        saved
+            ? Colors.green
+            : Colors.red;
 
     return GestureDetector(
-      onTap: widget.onTap,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Container(
-            width: 260,
-            height: 260,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.4),
-                  blurRadius: 30 + (_controller.value * 20),
-                  spreadRadius: 6,
+
+      onTap: onTap,
+
+      child: AnimatedContainer(
+
+        duration:
+            const Duration(
+              milliseconds: 500,
+            ),
+
+        width: 310,
+        height: 310,
+
+        decoration: BoxDecoration(
+
+          shape: BoxShape.circle,
+
+          color: Colors.white,
+
+          border: Border.all(
+            color: borderColor,
+            width: 8,
+          ),
+
+          boxShadow: [
+
+            BoxShadow(
+
+              color:
+                  borderColor.withValues(
+                    alpha: 0.35,
+                  ),
+
+              blurRadius: 30,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+
+        child: Padding(
+
+          padding:
+              const EdgeInsets.all(28),
+
+          child: Column(
+
+            mainAxisAlignment:
+                MainAxisAlignment.center,
+
+            children: [
+
+              Expanded(
+
+                child:
+                    SingleChildScrollView(
+
+                  physics:
+                      const BouncingScrollPhysics(),
+
+                  child: Column(
+
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
+
+                    children: [
+
+                      Text(
+
+                        placeName,
+
+                        textAlign:
+                            TextAlign.center,
+
+                        maxLines: 5,
+
+                        overflow:
+                            TextOverflow.ellipsis,
+
+                        style:
+                            const TextStyle(
+                              fontSize: 22,
+                              fontWeight:
+                                  FontWeight.bold,
+                            ),
+                      ),
+
+                      const SizedBox(
+                        height: 18,
+                      ),
+
+                      Text(
+
+                        '$district / $city',
+
+                        textAlign:
+                            TextAlign.center,
+
+                        style:
+                            const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-              border: Border.all(
-                color: color,
-                width: 6,
               ),
-              color: Colors.white,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  '🍽️',
-                  style: TextStyle(fontSize: 42),
-                ),
 
-                const SizedBox(height: 12),
+              const SizedBox(
+                height: 14,
+              ),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    widget.placeName,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+              Container(
+
+                padding:
+                    const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
                     ),
-                  ),
+
+                decoration: BoxDecoration(
+
+                  color:
+                      borderColor.withValues(
+                        alpha: 0.12,
+                      ),
+
+                  borderRadius:
+                      BorderRadius.circular(30),
                 ),
 
-                const SizedBox(height: 10),
+                child: Row(
 
-                Text(
-                  '${widget.city}, ${widget.district}',
-                  style: const TextStyle(fontSize: 18),
+                  mainAxisSize:
+                      MainAxisSize.min,
+
+                  children: [
+
+                    Icon(
+                      categoryIcon,
+                      color: borderColor,
+                      size: 24,
+                    ),
+
+                    const SizedBox(
+                      width: 10,
+                    ),
+
+                    Text(
+
+                      category,
+
+                      style:
+                          TextStyle(
+                            fontSize: 16,
+                            fontWeight:
+                                FontWeight.w700,
+
+                            color: borderColor,
+                          ),
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  'Kategori: ${widget.category}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -17,19 +17,22 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
   StreamSubscription? _intentSubscription;
 
   bool _loading = false;
   bool _saved = false;
 
-  String placeName = 'Google Haritalar’dan Yer Paylaşın';
+  String placeName =
+      'Google Haritalar’dan Yer Paylaşın';
 
   String city = '';
   String district = '';
 
-  String category = 'Bilinmiyor';
+  String category = 'Diğer';
 
-  IconData categoryIcon = Icons.place;
+  IconData categoryIcon =
+      Icons.place;
 
   int _currentIndex = 0;
 
@@ -46,10 +49,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _listenSharing() async {
-    _intentSubscription = ReceiveSharingIntent.instance
-        .getMediaStream()
-        .listen((value) {
+
+    _intentSubscription =
+        ReceiveSharingIntent.instance
+            .getMediaStream()
+            .listen((value) {
+
       if (value.isNotEmpty) {
+
         final text =
             value.first.path.toString();
 
@@ -62,26 +69,35 @@ class _HomeScreenState extends State<HomeScreen> {
             .getInitialMedia();
 
     if (initial.isNotEmpty) {
+
       _resolvePlace(
         initial.first.path.toString(),
       );
     }
   }
 
-  Future<void> _resolvePlace(String text) async {
+  Future<void> _resolvePlace(
+    String text,
+  ) async {
+
     setState(() {
+
       _loading = true;
       _saved = false;
     });
 
     try {
+
       final response = await http.post(
+
         Uri.parse(
           'https://mekan-radari.onrender.com/resolve',
         ),
+
         headers: {
           'Content-Type': 'application/json',
         },
+
         body: jsonEncode({
           'text': text,
         }),
@@ -90,16 +106,15 @@ class _HomeScreenState extends State<HomeScreen> {
       final data =
           jsonDecode(response.body);
 
-      final String name =
-          data['name'] ?? 'Yer';
-
       final List types =
           data['types'] ?? [];
 
       _setCategory(types);
 
       setState(() {
-        placeName = name;
+
+        placeName =
+            data['name'] ?? 'Yer';
 
         city =
             data['city'] ?? '';
@@ -109,7 +124,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
         _loading = false;
       });
+
     } catch (e) {
+
       debugPrint(e.toString());
 
       setState(() {
@@ -118,49 +135,93 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _setCategory(List types) {
-    if (types.contains('restaurant') ||
-        types.contains('food') ||
-        types.contains('cafe')) {
+  void _setCategory(
+    List types,
+  ) {
+
+    // YEME İÇME
+    if (
+      types.contains('restaurant') ||
+      types.contains('food') ||
+      types.contains('cafe')
+    ) {
+
       category = 'Yeme-İçme';
+
       categoryIcon =
           Icons.restaurant;
     }
 
-    else if (types.contains('hospital')) {
+    // HASTANE
+    else if (
+      types.contains('hospital')
+    ) {
+
       category = 'Sağlık';
+
       categoryIcon =
           Icons.local_hospital;
     }
 
-    else if (types.contains('mosque') ||
-        types.contains('place_of_worship')) {
+    // CAMİ / İBADET
+    else if (
+      types.contains('mosque') ||
+      types.contains('place_of_worship')
+    ) {
+
       category = 'İbadet';
+
       categoryIcon =
           Icons.mosque;
     }
 
-    else if (types.contains('shopping_mall') ||
-        types.contains('store')) {
+    // SPOR
+    else if (
+      types.contains('stadium') ||
+      types.contains('gym')
+    ) {
+
+      category = 'Spor';
+
+      categoryIcon =
+          Icons.sports_soccer;
+    }
+
+    // ALIŞVERİŞ
+    else if (
+      types.contains('shopping_mall') ||
+      types.contains('store')
+    ) {
+
       category = 'Alışveriş';
+
       categoryIcon =
           Icons.shopping_bag;
     }
 
-    else if (types.contains('park')) {
+    // PARK
+    else if (
+      types.contains('park')
+    ) {
+
       category = 'Park';
+
       categoryIcon =
           Icons.park;
     }
 
+    // DİĞER
     else {
+
       category = 'Diğer';
+
       categoryIcon =
           Icons.place;
     }
   }
 
   void _savePlace() {
+
     setState(() {
       _saved = true;
     });
@@ -168,35 +229,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     final screens = [
+
       _buildHome(),
+
       const SavedPlacesScreen(),
+
       const SettingsScreen(),
     ];
 
     return Scaffold(
-      body: screens[_currentIndex],
+
+      body:
+          screens[_currentIndex],
 
       bottomNavigationBar:
           NavigationBar(
+
         selectedIndex:
             _currentIndex,
 
         onDestinationSelected: (i) {
+
           setState(() {
             _currentIndex = i;
           });
         },
 
         destinations: const [
+
           NavigationDestination(
             icon: Icon(Icons.home),
             label: 'Ana Ekran',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.list),
             label: 'Kayıtlı',
           ),
+
           NavigationDestination(
             icon: Icon(Icons.settings),
             label: 'Ayarlar',
@@ -207,18 +279,33 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHome() {
+
     return SafeArea(
+
       child: Center(
-        child: _loading
-            ? const CircularProgressIndicator()
-            : RadarCircle(
-                saved: _saved,
-                onTap: _savePlace,
-                placeName: placeName,
-                city: city,
-                district: district,
-                category: category,
-              ),
+
+        child:
+            _loading
+
+                ? const CircularProgressIndicator()
+
+                : RadarCircle(
+
+                    saved: _saved,
+
+                    onTap: _savePlace,
+
+                    placeName: placeName,
+
+                    city: city,
+
+                    district: district,
+
+                    category: category,
+
+                    categoryIcon:
+                        categoryIcon,
+                  ),
       ),
     );
   }
