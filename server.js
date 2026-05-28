@@ -195,24 +195,22 @@ app.post("/resolve", async (req, res) => {
     let district = "";
 
     const addressParts =
-      fullAddress
-        .split(",")
-        .map(x => x.trim());
+  fullAddress
+    .split(",")
+    .map(x => x.trim());
 
-    if (
-      addressParts.length >= 2
-    ) {
+if (addressParts.length >= 2) {
 
-      district =
-        addressParts[
-          addressParts.length - 2
-        ];
+  district =
+    addressParts[
+      addressParts.length - 2
+    ];
 
-      city =
-        addressParts[
-          addressParts.length - 1
-        ];
-    }
+  city =
+    addressParts[
+      addressParts.length - 1
+    ];
+}    
 
     console.log(
       "🏙️ CITY:",
