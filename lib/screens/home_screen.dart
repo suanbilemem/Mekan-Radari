@@ -5,20 +5,28 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
+import '../database_helper.dart';
+import '../models/place_model.dart';
 import '../widgets/radar_circle.dart';
+
 import 'saved_places_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({
+    super.key,
+  });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() =>
+      _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState
+    extends State<HomeScreen> {
 
-  StreamSubscription? _intentSubscription;
+  StreamSubscription?
+      _intentSubscription;
 
   bool _loading = false;
   bool _saved = false;
@@ -34,6 +42,9 @@ class _HomeScreenState extends State<HomeScreen> {
   IconData categoryIcon =
       Icons.place;
 
+  double lat = 0;
+  double lng = 0;
+
   int _currentIndex = 0;
 
   @override
@@ -48,30 +59,35 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Future<void> _listenSharing() async {
+  Future<void>
+      _listenSharing() async {
 
     _intentSubscription =
-        ReceiveSharingIntent.instance
+        ReceiveSharingIntent
+            .instance
             .getMediaStream()
             .listen((value) {
 
       if (value.isNotEmpty) {
 
         final text =
-            value.first.path.toString();
+            value.first.path
+                .toString();
 
         _resolvePlace(text);
       }
     });
 
     final initial =
-        await ReceiveSharingIntent.instance
+        await ReceiveSharingIntent
+            .instance
             .getInitialMedia();
 
     if (initial.isNotEmpty) {
 
       _resolvePlace(
-        initial.first.path.toString(),
+        initial.first.path
+            .toString(),
       );
     }
   }
@@ -88,23 +104,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
 
-      final response = await http.post(
+      final response =
+          await http.post(
 
         Uri.parse(
           'https://mekan-radari.onrender.com/resolve',
         ),
 
         headers: {
-          'Content-Type': 'application/json',
+
+          'Content-Type':
+              'application/json',
         },
 
         body: jsonEncode({
+
           'text': text,
         }),
       );
 
       final data =
-          jsonDecode(response.body);
+          jsonDecode(
+            response.body,
+          );
 
       final List types =
           data['types'] ?? [];
@@ -114,7 +136,8 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
 
         placeName =
-            data['name'] ?? 'Yer';
+            data['name'] ??
+                'Yer';
 
         city =
             data['city'] ?? '';
@@ -122,12 +145,22 @@ class _HomeScreenState extends State<HomeScreen> {
         district =
             data['district'] ?? '';
 
+        lat =
+            (data['lat'] ?? 0)
+                .toDouble();
+
+        lng =
+            (data['lng'] ?? 0)
+                .toDouble();
+
         _loading = false;
       });
 
     } catch (e) {
 
-      debugPrint(e.toString());
+      debugPrint(
+        e.toString(),
+      );
 
       setState(() {
         _loading = false;
@@ -139,96 +172,165 @@ class _HomeScreenState extends State<HomeScreen> {
     List types,
   ) {
 
-    // YEME İÇME
     if (
-      types.contains('restaurant') ||
-      types.contains('food') ||
-      types.contains('cafe')
+      types.contains(
+        'restaurant',
+      ) ||
+      types.contains(
+        'food',
+      ) ||
+      types.contains(
+        'cafe',
+      )
     ) {
 
-      category = 'Yeme-İçme';
+      category =
+          'Yeme-İçme';
 
       categoryIcon =
           Icons.restaurant;
     }
 
-    // HASTANE
     else if (
-      types.contains('hospital')
+      types.contains(
+        'hospital',
+      )
     ) {
 
-      category = 'Sağlık';
+      category =
+          'Sağlık';
 
       categoryIcon =
           Icons.local_hospital;
     }
 
-    // CAMİ / İBADET
     else if (
-      types.contains('mosque') ||
-      types.contains('place_of_worship')
+      types.contains(
+        'mosque',
+      ) ||
+      types.contains(
+        'place_of_worship',
+      )
     ) {
 
-      category = 'İbadet';
+      category =
+          'İbadet';
 
       categoryIcon =
           Icons.mosque;
     }
 
-    // SPOR
     else if (
-      types.contains('stadium') ||
-      types.contains('gym')
+      types.contains(
+        'stadium',
+      ) ||
+      types.contains(
+        'gym',
+      )
     ) {
 
-      category = 'Spor';
+      category =
+          'Spor';
 
       categoryIcon =
           Icons.sports_soccer;
     }
 
-    // ALIŞVERİŞ
     else if (
-      types.contains('shopping_mall') ||
-      types.contains('store')
+      types.contains(
+        'shopping_mall',
+      ) ||
+      types.contains(
+        'store',
+      )
     ) {
 
-      category = 'Alışveriş';
+      category =
+          'Alışveriş';
 
       categoryIcon =
           Icons.shopping_bag;
     }
 
-    // PARK
     else if (
-      types.contains('park')
+      types.contains(
+        'park',
+      )
     ) {
 
-      category = 'Park';
+      category =
+          'Park';
 
       categoryIcon =
           Icons.park;
     }
 
-    // DİĞER
     else {
 
-      category = 'Diğer';
+      category =
+          'Diğer';
 
       categoryIcon =
           Icons.place;
     }
   }
 
-  void _savePlace() {
+  Future<void>
+      _savePlace() async {
+
+    if (placeName ==
+        'Google Haritalar’dan Yer Paylaşın') {
+      return;
+    }
+
+    final place =
+        PlaceModel(
+
+      name: placeName,
+
+      city: city,
+
+      district: district,
+
+      category: category,
+
+      lat: lat,
+
+      lng: lng,
+    );
+
+    await DatabaseHelper
+        .instance
+        .insertPlace(place);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+
+      SnackBar(
+
+        content: Text(
+          '$placeName kaydedildi',
+        ),
+
+        duration:
+            const Duration(
+          seconds: 2,
+        ),
+      ),
+    );
 
     setState(() {
+
       _saved = true;
     });
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
 
     final screens = [
 
@@ -242,7 +344,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
 
       body:
-          screens[_currentIndex],
+          screens[
+              _currentIndex],
 
       bottomNavigationBar:
           NavigationBar(
@@ -250,29 +353,48 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedIndex:
             _currentIndex,
 
-        onDestinationSelected: (i) {
+        onDestinationSelected:
+            (i) {
 
           setState(() {
-            _currentIndex = i;
+
+            _currentIndex =
+                i;
           });
         },
 
         destinations: const [
 
           NavigationDestination(
-            icon: Icon(Icons.home),
-            label: 'Ana Ekran',
+
+            icon: Icon(
+              Icons.home,
+            ),
+
+            label:
+                'Ana Ekran',
           ),
 
           NavigationDestination(
-            icon: Icon(Icons.list),
-            label: 'Kayıtlı',
+
+            icon: Icon(
+              Icons.list,
+            ),
+
+            label:
+                'Kayıtlı',
           ),
 
           NavigationDestination(
-            icon: Icon(Icons.settings),
-            label: 'Ayarlar',
+
+            icon: Icon(
+              Icons.settings,
+            ),
+
+            label:
+                'Ayarlar',
           ),
+
         ],
       ),
     );
@@ -291,17 +413,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 : RadarCircle(
 
-                    saved: _saved,
+                    saved:
+                        _saved,
 
-                    onTap: _savePlace,
+                    onTap:
+                        _savePlace,
 
-                    placeName: placeName,
+                    placeName:
+                        placeName,
 
-                    city: city,
+                    city:
+                        city,
 
-                    district: district,
+                    district:
+                        district,
 
-                    category: category,
+                    category:
+                        category,
 
                     categoryIcon:
                         categoryIcon,

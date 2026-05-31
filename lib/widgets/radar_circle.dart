@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 class RadarCircle extends StatelessWidget {
-
   final bool saved;
-
   final VoidCallback onTap;
 
   final String placeName;
@@ -26,173 +24,115 @@ class RadarCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final Color borderColor =
-        saved
-            ? Colors.green
-            : Colors.red;
+        saved ? Colors.green : Colors.red;
 
     return GestureDetector(
-
       onTap: onTap,
-
       child: AnimatedContainer(
-
-        duration:
-            const Duration(
-              milliseconds: 500,
-            ),
-
+        duration: const Duration(
+          milliseconds: 500,
+        ),
         width: 310,
         height: 310,
-
         decoration: BoxDecoration(
-
           shape: BoxShape.circle,
-
           color: Colors.white,
-
           border: Border.all(
             color: borderColor,
             width: 8,
           ),
-
           boxShadow: [
-
             BoxShadow(
-
-              color:
-                  borderColor.withValues(
-                    alpha: 0.35,
-                  ),
-
+              color: borderColor.withValues(
+                alpha: 0.35,
+              ),
               blurRadius: 30,
               spreadRadius: 5,
             ),
           ],
         ),
-
         child: Padding(
-
-          padding:
-              const EdgeInsets.all(28),
-
+          padding: const EdgeInsets.all(28),
           child: Column(
-
             mainAxisAlignment:
                 MainAxisAlignment.center,
-
             children: [
-
               Expanded(
-
-                child:
-                    SingleChildScrollView(
-
-                  physics:
-                      const BouncingScrollPhysics(),
-
+                child: Center(
                   child: Column(
-
                     mainAxisAlignment:
                         MainAxisAlignment.center,
-
                     children: [
-
                       Text(
-
                         placeName,
-
                         textAlign:
                             TextAlign.center,
-
-                        maxLines: 5,
-
+                        maxLines: 4,
                         overflow:
                             TextOverflow.ellipsis,
-
                         style:
                             const TextStyle(
-                              fontSize: 22,
-                              fontWeight:
-                                  FontWeight.bold,
-                            ),
+                          fontSize: 22,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
                       ),
-
                       const SizedBox(
-                        height: 18,
+                        height: 14,
                       ),
-
                       Text(
-
-                        '$district / $city',
-
+                        city,
                         textAlign:
                             TextAlign.center,
-
                         style:
                             const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
+                          fontSize: 16,
+                          color:
+                              Colors.black87,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-
-              const SizedBox(
-                height: 14,
-              ),
-
               Container(
-
                 padding:
                     const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
-                    ),
-
+                  horizontal: 18,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
-
                   color:
                       borderColor.withValues(
-                        alpha: 0.12,
-                      ),
-
+                    alpha: 0.12,
+                  ),
                   borderRadius:
-                      BorderRadius.circular(30),
+                      BorderRadius.circular(
+                    30,
+                  ),
                 ),
-
                 child: Row(
-
                   mainAxisSize:
                       MainAxisSize.min,
-
                   children: [
-
                     Icon(
                       categoryIcon,
                       color: borderColor,
                       size: 24,
                     ),
-
                     const SizedBox(
                       width: 10,
                     ),
-
                     Text(
-
                       category,
-
-                      style:
-                          TextStyle(
-                            fontSize: 16,
-                            fontWeight:
-                                FontWeight.w700,
-
-                            color: borderColor,
-                          ),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight:
+                            FontWeight.w700,
+                        color:
+                            borderColor,
+                      ),
                     ),
                   ],
                 ),
