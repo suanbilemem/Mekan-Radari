@@ -11,6 +11,8 @@ class PlaceModel {
   final double lat;
   final double lng;
 
+  double distance = 0;
+
   PlaceModel({
     this.id,
     required this.name,
@@ -19,20 +21,16 @@ class PlaceModel {
     required this.category,
     required this.lat,
     required this.lng,
+    this.distance = 999999,
   });
 
   Map<String, dynamic> toMap() {
-
     return {
-
       'id': id,
-
       'name': name,
       'city': city,
       'district': district,
-
       'category': category,
-
       'lat': lat,
       'lng': lng,
     };
@@ -41,19 +39,14 @@ class PlaceModel {
   factory PlaceModel.fromMap(
     Map<String, dynamic> map,
   ) {
-
     return PlaceModel(
-
       id: map['id'],
-
       name: map['name'],
       city: map['city'],
       district: map['district'],
-
       category: map['category'],
-
       lat: map['lat'],
       lng: map['lng'],
     );
   }
-}
+} 

@@ -68,34 +68,46 @@ class RadarCircle extends StatelessWidget {
                         placeName,
                         textAlign:
                             TextAlign.center,
-                        maxLines: 4,
+                        maxLines: 2,
                         overflow:
                             TextOverflow.ellipsis,
                         style:
                             const TextStyle(
-                          fontSize: 22,
+                          fontSize: 24,
                           fontWeight:
                               FontWeight.bold,
+                          height: 1.2,
                         ),
                       ),
+
                       const SizedBox(
-                        height: 14,
+                        height: 18,
                       ),
+
                       Text(
-                        city,
+                        district.isNotEmpty &&
+                                city.isNotEmpty
+                            ? '$district / $city'
+                            : city,
                         textAlign:
                             TextAlign.center,
+                        maxLines: 1,
+                        overflow:
+                            TextOverflow.ellipsis,
                         style:
                             const TextStyle(
                           fontSize: 16,
                           color:
-                              Colors.black87,
+                              Colors.black54,
+                          fontWeight:
+                              FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
+
               Container(
                 padding:
                     const EdgeInsets.symmetric(

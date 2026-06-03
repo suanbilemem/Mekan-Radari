@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../database_helper.dart';
 import '../models/place_model.dart';
@@ -15,27 +16,47 @@ class SavedPlacesScreen extends StatefulWidget {
 
 class _SavedPlacesScreenState
     extends State<SavedPlacesScreen> {
-
   List<PlaceModel> places = [];
 
-  String selectedCategory =
-      'Hepsi';
+  String selectedCategory = 'Hepsi';
 
   @override
   void initState() {
     super.initState();
-
     loadPlaces();
   }
 
   Future<void> loadPlaces() async {
-
     final data =
         await DatabaseHelper.instance
             .getPlaces();
 
-    setState(() {
+    try {
+      final currentPosition =
+          await Geolocator.getCurrentPosition();
 
+      for (final place in data) {
+        place.distance =
+            Geolocator.distanceBetween(
+          currentPosition.latitude,
+          currentPosition.longitude,
+          place.lat,
+          place.lng,
+        );
+      }
+
+      data.sort(
+        (a, b) => a.distance.compareTo(
+          b.distance,
+        ),
+      );
+    } catch (e) {
+      debugPrint(
+        'Mesafe hesaplanamadı: $e',
+      );
+    }
+
+    setState(() {
       places = data;
     });
   }
@@ -43,49 +64,35 @@ class _SavedPlacesScreenState
   Future<void> _deletePlace(
     PlaceModel place,
   ) async {
-
     final result =
         await showDialog<bool>(
-
       context: context,
-
       builder: (_) => AlertDialog(
-
         title: const Text(
           'Kaydı Sil',
         ),
-
         content: Text(
           '${place.name} silinsin mi?',
         ),
-
         actions: [
-
           TextButton(
-
             onPressed: () {
-
               Navigator.pop(
                 context,
                 false,
               );
             },
-
             child: const Text(
               'Vazgeç',
             ),
           ),
-
           ElevatedButton(
-
             onPressed: () {
-
               Navigator.pop(
                 context,
                 true,
               );
             },
-
             child: const Text(
               'Sil',
             ),
@@ -107,9 +114,7 @@ class _SavedPlacesScreenState
   IconData _getIcon(
     String category,
   ) {
-
     switch (category) {
-
       case 'Yeme-İçme':
         return Icons.restaurant;
 
@@ -133,69 +138,38 @@ class _SavedPlacesScreenState
     }
   }
 
-  Color _getColor(
-    String category,
+  String _distanceText(
+    double distance,
   ) {
-
-    switch (category) {
-
-      case 'Yeme-İçme':
-        return Colors.orange;
-
-      case 'Sağlık':
-        return Colors.red;
-
-      case 'İbadet':
-        return Colors.green;
-
-      case 'Spor':
-        return Colors.blue;
-
-      case 'Park':
-        return Colors.teal;
-
-      case 'Alışveriş':
-        return Colors.purple;
-
-      default:
-        return Colors.grey;
+    if (distance < 1000) {
+      return '${distance.toInt()} m';
     }
+
+    return '${(distance / 1000).toStringAsFixed(1)} km';
   }
 
   @override
-  Widget build(BuildContext context) {
-
+  Widget build(
+    BuildContext context,
+  ) {
     final filteredPlaces =
-
         selectedCategory == 'Hepsi'
-
             ? places
-
             : places.where((p) {
-
                 return p.category ==
                     selectedCategory;
-
               }).toList();
 
     return SafeArea(
-
       child: Padding(
-
         padding:
             const EdgeInsets.all(16),
-
         child: Column(
-
           crossAxisAlignment:
               CrossAxisAlignment.start,
-
           children: [
-
             const Text(
-
               'Kayıtlı Yerler',
-
               style: TextStyle(
                 fontSize: 30,
                 fontWeight:
@@ -204,37 +178,27 @@ class _SavedPlacesScreenState
             ),
 
             const SizedBox(
-              height: 18,
+              height: 16,
             ),
 
-            DropdownButtonFormField<String>(
-
+            DropdownButtonFormField<
+                String>(
               value:
                   selectedCategory,
-
               decoration:
                   InputDecoration(
-
                 filled: true,
-
                 fillColor:
                     Colors.white,
-
                 border:
                     OutlineInputBorder(
-
                   borderRadius:
                       BorderRadius.circular(
-                    14,
+                    12,
                   ),
-
-                  borderSide:
-                      BorderSide.none,
                 ),
               ),
-
               items: [
-
                 'Hepsi',
                 'Yeme-İçme',
                 'Sağlık',
@@ -243,22 +207,14 @@ class _SavedPlacesScreenState
                 'Park',
                 'Alışveriş',
                 'Diğer',
-
               ].map((e) {
-
                 return DropdownMenuItem(
-
                   value: e,
-
                   child: Text(e),
                 );
-
               }).toList(),
-
               onChanged: (value) {
-
                 setState(() {
-
                   selectedCategory =
                       value!;
                 });
@@ -266,191 +222,184 @@ class _SavedPlacesScreenState
             ),
 
             const SizedBox(
-              height: 18,
+              height: 16,
+            ),
+
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 10,
+              ),
+              decoration:
+                  BoxDecoration(
+                color:
+                    Colors.grey.shade200,
+                borderRadius:
+                    BorderRadius.circular(
+                  8,
+                ),
+              ),
+              child: const Row(
+                children: [
+                  SizedBox(
+                    width: 40,
+                    child: Text(
+                      'Kat.',
+                      style: TextStyle(
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: Text(
+                      'Yer',
+                      style: TextStyle(
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'Konum',
+                      style: TextStyle(
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 70,
+                    child: Text(
+                      'Mesafe',
+                      textAlign:
+                          TextAlign.end,
+                      style: TextStyle(
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(
+              height: 8,
             ),
 
             Expanded(
-
               child:
                   filteredPlaces.isEmpty
-
                       ? const Center(
-
                           child: Text(
-                            'Bu kategoride kayıt yok',
+                            'Kayıtlı yer bulunamadı',
                           ),
                         )
-
-                      : ListView.builder(
-
+                      : ListView.separated(
                           itemCount:
-                              filteredPlaces.length,
-
+                              filteredPlaces
+                                  .length,
+                          separatorBuilder:
+                              (_, __) =>
+                                  const Divider(
+                            height: 1,
+                          ),
                           itemBuilder:
-                              (context, index) {
-
+                              (
+                            context,
+                            index,
+                          ) {
                             final place =
-                                filteredPlaces[index];
+                                filteredPlaces[
+                                    index];
 
-                            final color =
-                                _getColor(
-                              place.category,
-                            );
-
-                            return Container(
-
-                              margin:
-                                  const EdgeInsets.only(
-                                bottom: 14,
-                              ),
-
-                              padding:
-                                  const EdgeInsets.all(
-                                16,
-                              ),
-
-                              decoration:
-                                  BoxDecoration(
-
-                                color:
-                                    Colors.white,
-
-                                borderRadius:
-                                    BorderRadius.circular(
-                                  22,
+                            return InkWell(
+                              onLongPress:
+                                  () {
+                                _deletePlace(
+                                  place,
+                                );
+                              },
+                              child:
+                                  Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal:
+                                      8,
+                                  vertical:
+                                      14,
                                 ),
-
-                                boxShadow: [
-
-                                  BoxShadow(
-
-                                    color:
-                                        Colors.black.withValues(
-                                      alpha: 0.05,
-                                    ),
-
-                                    blurRadius: 10,
-                                  ),
-                                ],
-                              ),
-
-                              child: Row(
-
-                                children: [
-
-                                  Container(
-
-                                    width: 54,
-                                    height: 54,
-
-                                    decoration:
-                                        BoxDecoration(
-
-                                      color:
-                                          color.withValues(
-                                        alpha: 0.15,
-                                      ),
-
-                                      shape:
-                                          BoxShape.circle,
-                                    ),
-
-                                    child: Icon(
-
-                                      _getIcon(
-                                        place.category,
-                                      ),
-
-                                      color:
-                                          color,
-                                    ),
-                                  ),
-
-                                  const SizedBox(
-                                    width: 16,
-                                  ),
-
-                                  Expanded(
-
-                                    child: Column(
-
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-
-                                      children: [
-
-                                        Text(
-
-                                          place.name,
-
-                                          maxLines: 2,
-
-                                          overflow:
-                                              TextOverflow.ellipsis,
-
-                                          style:
-                                              const TextStyle(
-
-                                            fontSize: 18,
-
-                                            fontWeight:
-                                                FontWeight.bold,
-                                          ),
-                                        ),
-
-                                        const SizedBox(
-                                          height: 6,
-                                        ),
-
-                                        Text(
-
+                                child:
+                                    Row(
+                                  children: [
+                                    SizedBox(
+                                      width:
+                                          40,
+                                      child:
+                                          Icon(
+                                        _getIcon(
                                           place.category,
-
-                                          style:
-                                              TextStyle(
-
-                                            color:
-                                                color,
-
-                                            fontWeight:
-                                                FontWeight.w600,
-                                          ),
                                         ),
-
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
-
-                                        Text(
-
-                                          '${place.district} / ${place.city}',
-
-                                          style:
-                                              const TextStyle(
-                                            color:
-                                                Colors.black54,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  IconButton(
-
-                                    onPressed: () {
-
-                                      _deletePlace(
-                                        place,
-                                      );
-                                    },
-
-                                    icon: const Icon(
-                                      Icons.delete,
+                                        size:
+                                            22,
+                                      ),
                                     ),
 
-                                    color: Colors.red,
-                                  ),
-                                ],
+                                    Expanded(
+                                      flex:
+                                          4,
+                                      child:
+                                          Text(
+                                        place.name,
+                                        maxLines:
+                                            1,
+                                        overflow:
+                                            TextOverflow.ellipsis,
+                                      ),
+                                    ),
+
+                                    Expanded(
+                                      flex:
+                                          3,
+                                      child:
+                                          Text(
+                                        '${place.district}/${place.city}',
+                                        maxLines:
+                                            1,
+                                        overflow:
+                                            TextOverflow.ellipsis,
+                                        style:
+                                            const TextStyle(
+                                          color:
+                                              Colors.black54,
+                                        ),
+                                      ),
+                                    ),
+
+                                    SizedBox(
+                                      width:
+                                          70,
+                                      child:
+                                          Text(
+                                        _distanceText(
+                                          place.distance,
+                                        ),
+                                        textAlign:
+                                            TextAlign.end,
+                                        style:
+                                            const TextStyle(
+                                          fontWeight:
+                                              FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },

@@ -123,38 +123,65 @@ class _HomeScreenState
         }),
       );
 
-      final data =
-          jsonDecode(
-            response.body,
+      final data =jsonDecode(response.body,
           );
+
+          debugPrint(
+  'DISTRICT: ${data['district']}',
+);
+
+debugPrint(
+  'CITY: ${data['city']}',
+);
 
       final List types =
           data['types'] ?? [];
 
       _setCategory(types);
 
-      setState(() {
+setState(() {
 
-        placeName =
-            data['name'] ??
-                'Yer';
+  placeName =
+      data['name'] ?? 'Yer';
 
-        city =
-            data['city'] ?? '';
+  String rawDistrict =
+      data['district'] ?? '';
 
-        district =
-            data['district'] ?? '';
+  String rawCity =
+      data['city'] ?? '';
 
-        lat =
-            (data['lat'] ?? 0)
-                .toDouble();
+  // 34672 Üsküdar/İstanbul
+  if (rawDistrict.contains('/')) {
 
-        lng =
-            (data['lng'] ?? 0)
-                .toDouble();
+    final parts =
+        rawDistrict.split('/');
 
-        _loading = false;
-      });
+    district =
+        parts[0]
+            .replaceAll(
+              RegExp(r'\d+'),
+              '',
+            )
+            .trim();
+
+    city =
+        parts.length > 1
+            ? parts[1].trim()
+            : rawCity;
+  } else {
+
+    district = rawDistrict;
+    city = rawCity;
+  }
+
+  lat =
+      (data['lat'] ?? 0).toDouble();
+
+  lng =
+      (data['lng'] ?? 0).toDouble();
+
+  _loading = false;
+});
 
     } catch (e) {
 
@@ -163,6 +190,7 @@ class _HomeScreenState
       );
 
       setState(() {
+
         _loading = false;
       });
     }
@@ -394,7 +422,6 @@ class _HomeScreenState
             label:
                 'Ayarlar',
           ),
-
         ],
       ),
     );
