@@ -318,90 +318,161 @@ class _SavedPlacesScreenState
                                 filteredPlaces[
                                     index];
 
-                            return InkWell(
-                              onLongPress:
-                                  () {
-                                _deletePlace(
-                                  place,
-                                );
-                              },
-                              child:
-                                  Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(
-                                  horizontal:
-                                      8,
-                                  vertical:
-                                      14,
-                                ),
-                                child:
-                                    Row(
-                                  children: [
-                                    SizedBox(
-                                      width:
-                                          40,
-                                      child:
-                                          Icon(
-                                        _getIcon(
-                                          place.category,
-                                        ),
-                                        size:
-                                            22,
-                                      ),
-                                    ),
+                            return Dismissible(
+  key: Key(
+    place.id.toString(),
+  ),
 
-                                    Expanded(
-                                      flex:
-                                          4,
-                                      child:
-                                          Text(
-                                        place.name,
-                                        maxLines:
-                                            1,
-                                        overflow:
-                                            TextOverflow.ellipsis,
-                                      ),
-                                    ),
+  direction:
+      DismissDirection.endToStart,
 
-                                    Expanded(
-                                      flex:
-                                          3,
-                                      child:
-                                          Text(
-                                        '${place.district}/${place.city}',
-                                        maxLines:
-                                            1,
-                                        overflow:
-                                            TextOverflow.ellipsis,
-                                        style:
-                                            const TextStyle(
-                                          color:
-                                              Colors.black54,
-                                        ),
-                                      ),
-                                    ),
+  confirmDismiss: (_) async {
 
-                                    SizedBox(
-                                      width:
-                                          70,
-                                      child:
-                                          Text(
-                                        _distanceText(
-                                          place.distance,
-                                        ),
-                                        textAlign:
-                                            TextAlign.end,
-                                        style:
-                                            const TextStyle(
-                                          fontWeight:
-                                              FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
+    final result =
+        await showDialog<bool>(
+
+      context: context,
+
+      builder: (_) => AlertDialog(
+
+        title: const Text(
+          'Kaydı Sil',
+        ),
+
+        content: Text(
+          '${place.name} silinsin mi?',
+        ),
+
+        actions: [
+
+          TextButton(
+
+            onPressed: () {
+
+              Navigator.pop(
+                context,
+                false,
+              );
+            },
+
+            child: const Text(
+              'Vazgeç',
+            ),
+          ),
+
+          ElevatedButton(
+
+            onPressed: () {
+
+              Navigator.pop(
+                context,
+                true,
+              );
+            },
+
+            child: const Text(
+              'Sil',
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return result ?? false;
+  },
+
+  onDismissed: (_) async {
+
+    await DatabaseHelper.instance
+        .deletePlace(
+      place.id!,
+    );
+
+    await loadPlaces();
+  },
+
+  background: Container(
+
+    color: Colors.red,
+
+    alignment:
+        Alignment.centerRight,
+
+    padding:
+        const EdgeInsets.only(
+      right: 24,
+    ),
+
+    child: const Icon(
+      Icons.delete,
+      color: Colors.white,
+    ),
+  ),
+
+  child: Padding(
+    padding:
+        const EdgeInsets.symmetric(
+      horizontal: 8,
+      vertical: 14,
+    ),
+
+    child: Row(
+      children: [
+
+        SizedBox(
+          width: 40,
+          child: Icon(
+            _getIcon(
+              place.category,
+            ),
+            size: 22,
+          ),
+        ),
+
+        Expanded(
+          flex: 4,
+          child: Text(
+            place.name,
+            maxLines: 1,
+            overflow:
+                TextOverflow.ellipsis,
+          ),
+        ),
+
+        Expanded(
+          flex: 3,
+          child: Text(
+            '${place.district}/${place.city}',
+            maxLines: 1,
+            overflow:
+                TextOverflow.ellipsis,
+            style:
+                const TextStyle(
+              color:
+                  Colors.black54,
+            ),
+          ),
+        ),
+
+        SizedBox(
+          width: 70,
+          child: Text(
+            _distanceText(
+              place.distance,
+            ),
+            textAlign:
+                TextAlign.end,
+            style:
+                const TextStyle(
+              fontWeight:
+                  FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+);
                           },
                         ),
             ),

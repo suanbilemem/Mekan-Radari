@@ -137,7 +137,10 @@ debugPrint(
       final List types =
           data['types'] ?? [];
 
-      _setCategory(types);
+      _setCategory(
+  types,
+  data['name'] ?? '',
+);
 
 setState(() {
 
@@ -196,112 +199,226 @@ setState(() {
     }
   }
 
-  void _setCategory(
-    List types,
+void _setCategory(
+  List types,
+  String name,
+) {
+
+  final lowerName =
+      name.toLowerCase();
+
+  // YEME İÇME
+  if (
+      types.contains('restaurant') ||
+      types.contains('food') ||
+      types.contains('cafe') ||
+
+      lowerName.contains('restaurant') ||
+      lowerName.contains('cafe') ||
+      lowerName.contains('kahve') ||
+      lowerName.contains('coffee') ||
+      lowerName.contains('burger') ||
+      lowerName.contains('pizza') ||
+      lowerName.contains('kebap') ||
+      lowerName.contains('lokanta') ||
+      lowerName.contains('pastane')
   ) {
 
-    if (
-      types.contains(
-        'restaurant',
-      ) ||
-      types.contains(
-        'food',
-      ) ||
-      types.contains(
-        'cafe',
-      )
-    ) {
-
-      category =
-          'Yeme-İçme';
-
-      categoryIcon =
-          Icons.restaurant;
-    }
-
-    else if (
-      types.contains(
-        'hospital',
-      )
-    ) {
-
-      category =
-          'Sağlık';
-
-      categoryIcon =
-          Icons.local_hospital;
-    }
-
-    else if (
-      types.contains(
-        'mosque',
-      ) ||
-      types.contains(
-        'place_of_worship',
-      )
-    ) {
-
-      category =
-          'İbadet';
-
-      categoryIcon =
-          Icons.mosque;
-    }
-
-    else if (
-      types.contains(
-        'stadium',
-      ) ||
-      types.contains(
-        'gym',
-      )
-    ) {
-
-      category =
-          'Spor';
-
-      categoryIcon =
-          Icons.sports_soccer;
-    }
-
-    else if (
-      types.contains(
-        'shopping_mall',
-      ) ||
-      types.contains(
-        'store',
-      )
-    ) {
-
-      category =
-          'Alışveriş';
-
-      categoryIcon =
-          Icons.shopping_bag;
-    }
-
-    else if (
-      types.contains(
-        'park',
-      )
-    ) {
-
-      category =
-          'Park';
-
-      categoryIcon =
-          Icons.park;
-    }
-
-    else {
-
-      category =
-          'Diğer';
-
-      categoryIcon =
-          Icons.place;
-    }
+    category = 'Yeme-İçme';
+    categoryIcon = Icons.restaurant;
   }
+
+  // SAĞLIK
+  else if (
+      types.contains('hospital') ||
+      types.contains('health') ||
+      types.contains('doctor') ||
+      types.contains('dentist') ||
+      types.contains('drugstore') ||
+      types.contains('pharmacy') ||
+
+      lowerName.contains('hastane') ||
+      lowerName.contains('eczane') ||
+      lowerName.contains('klinik') ||
+      lowerName.contains('sağlık') ||
+      lowerName.contains('acil')
+  ) {
+
+    category = 'Sağlık';
+    categoryIcon =
+        Icons.local_hospital;
+  }
+
+  // EĞİTİM
+  else if (
+      types.contains('school') ||
+      types.contains('university') ||
+
+      lowerName.contains('okul') ||
+      lowerName.contains('üniversite') ||
+      lowerName.contains('kolej') ||
+      lowerName.contains('akademi') ||
+      lowerName.contains('lise')
+  ) {
+
+    category = 'Eğitim';
+    categoryIcon =
+        Icons.school;
+  }
+
+  // İBADET
+  else if (
+      types.contains('mosque') ||
+      types.contains('place_of_worship') ||
+
+      lowerName.contains('cami') ||
+      lowerName.contains('camii') ||
+      lowerName.contains('mescit') ||
+      lowerName.contains('kilise') ||
+      lowerName.contains('sinagog')
+  ) {
+
+    category = 'İbadet';
+    categoryIcon =
+        Icons.mosque;
+  }
+
+  // SPOR
+  else if (
+      types.contains('stadium') ||
+      types.contains('gym') ||
+
+      lowerName.contains('spor') ||
+      lowerName.contains('voleybol') ||
+      lowerName.contains('basketbol') ||
+      lowerName.contains('futbol') ||
+      lowerName.contains('arena') ||
+      lowerName.contains('fitness') ||
+      lowerName.contains('stadyum') ||
+      lowerName.contains('stad')
+  ) {
+
+    category = 'Spor';
+    categoryIcon =
+        Icons.sports_soccer;
+  }
+
+  // ALIŞVERİŞ
+  else if (
+      types.contains('shopping_mall') ||
+      types.contains('store') ||
+
+      lowerName.contains('avm') ||
+      lowerName.contains('migros') ||
+      lowerName.contains('a101') ||
+      lowerName.contains('bim') ||
+      lowerName.contains('şok') ||
+      lowerName.contains('carrefour')
+  ) {
+
+    category = 'Alışveriş';
+    categoryIcon =
+        Icons.shopping_bag;
+  }
+
+  // PARK
+  else if (
+      types.contains('park') ||
+
+      lowerName.contains('park') ||
+      lowerName.contains('koru') ||
+      lowerName.contains('mesire')
+  ) {
+
+    category = 'Park';
+    categoryIcon =
+        Icons.park;
+  }
+
+  // KÜLTÜR SANAT
+  else if (
+      types.contains('museum') ||
+      types.contains('art_gallery') ||
+
+      lowerName.contains('müze') ||
+      lowerName.contains('galeri') ||
+      lowerName.contains('sanat') ||
+      lowerName.contains('tiyatro') ||
+      lowerName.contains('opera')
+  ) {
+
+    category = 'Kültür';
+    categoryIcon =
+        Icons.museum;
+  }
+
+  // KONAKLAMA
+  else if (
+      types.contains('lodging') ||
+      types.contains('hotel') ||
+
+      lowerName.contains('otel') ||
+      lowerName.contains('hotel') ||
+      lowerName.contains('hostel')
+  ) {
+
+    category = 'Konaklama';
+    categoryIcon =
+        Icons.hotel;
+  }
+
+  // ULAŞIM
+  else if (
+      types.contains('airport') ||
+      types.contains('bus_station') ||
+      types.contains('train_station') ||
+      types.contains('subway_station') ||
+
+      lowerName.contains('metro') ||
+      lowerName.contains('istasyon') ||
+      lowerName.contains('otogar') ||
+      lowerName.contains('iskele') ||
+      lowerName.contains('havaalanı')
+  ) {
+
+    category = 'Ulaşım';
+    categoryIcon =
+        Icons.directions_bus;
+  }
+
+  // İŞ MERKEZİ
+  else if (
+      lowerName.contains('plaza') ||
+      lowerName.contains('iş merkezi') ||
+      lowerName.contains('business') ||
+      lowerName.contains('tower')
+  ) {
+
+    category = 'İş Merkezi';
+    categoryIcon =
+        Icons.business;
+  }
+
+  // RESMİ KURUM
+  else if (
+      lowerName.contains('belediye') ||
+      lowerName.contains('kaymakamlık') ||
+      lowerName.contains('mahkeme') ||
+      lowerName.contains('nüfus')
+  ) {
+
+    category = 'Resmi Kurum';
+    categoryIcon =
+        Icons.account_balance;
+  }
+
+  else {
+
+    category = 'Diğer';
+    categoryIcon =
+        Icons.place;
+  }
+}
 
   Future<void>
       _savePlace() async {
