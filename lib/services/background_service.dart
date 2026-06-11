@@ -5,9 +5,16 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'location_service.dart';
 import '../database_helper.dart';
 
+Timer? _backgroundTimer;
+
 class BackgroundService {
   static Future<void> initialize() async {
     final service = FlutterBackgroundService();
+
+    if (await service.isRunning()) {
+      debugPrint('Background service zaten çalışıyor');
+      return;
+    }
 
     await service.configure(
       androidConfiguration: AndroidConfiguration(
@@ -22,7 +29,7 @@ class BackgroundService {
       iosConfiguration: IosConfiguration(),
     );
 
-    service.startService();
+    await service.startService();
   }
 }
 
@@ -30,30 +37,24 @@ class BackgroundService {
 void onStart(ServiceInstance service) {
   debugPrint('🚀 Background Service Başladı');
 
-  Timer.periodic(
-    const Duration(seconds: 30),
-    (timer) async {
-      try {
-        debugPrint('🔄 Background kontrol başladı');
+  if (_backgroundTimer?.isActive ?? false) {
+    debugPrint('Background timer zaten çalışıyor');
+    return;
+  }
 
-        final places =
-            await DatabaseHelper.instance.getPlaces();
+  _backgroundTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+    try {
+      debugPrint('🔄 Background kontrol başladı');
 
-        debugPrint(
-          '📦 Kayıtlı yer sayısı: ${places.length}',
-        );
+      final places = await DatabaseHelper.instance.getPlaces();
 
-        await LocationService.instance
-            .checkPlaces();
+      debugPrint('📦 Kayıtlı yer sayısı: ${places.length}');
 
-        debugPrint(
-          '✅ Konum kontrolü tamamlandı',
-        );
-      } catch (e) {
-        debugPrint(
-          '❌ Background hata: $e',
-        );
-      }
-    },
-  );
+      await LocationService.instance.checkPlaces();
+
+      debugPrint('✅ Konum kontrolü tamamlandı');
+    } catch (e) {
+      debugPrint('❌ Background hata: $e');
+    }
+  });
 }

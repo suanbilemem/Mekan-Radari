@@ -3,19 +3,16 @@ import 'package:geolocator/geolocator.dart';
 
 import '../database_helper.dart';
 import '../models/place_model.dart';
+import '../services/map_launcher_service.dart';
 
 class SavedPlacesScreen extends StatefulWidget {
-  const SavedPlacesScreen({
-    super.key,
-  });
+  const SavedPlacesScreen({super.key});
 
   @override
-  State<SavedPlacesScreen> createState() =>
-      _SavedPlacesScreenState();
+  State<SavedPlacesScreen> createState() => _SavedPlacesScreenState();
 }
 
-class _SavedPlacesScreenState
-    extends State<SavedPlacesScreen> {
+class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
   List<PlaceModel> places = [];
 
   String selectedCategory = 'Hepsi';
@@ -27,17 +24,13 @@ class _SavedPlacesScreenState
   }
 
   Future<void> loadPlaces() async {
-    final data =
-        await DatabaseHelper.instance
-            .getPlaces();
+    final data = await DatabaseHelper.instance.getPlaces();
 
     try {
-      final currentPosition =
-          await Geolocator.getCurrentPosition();
+      final currentPosition = await Geolocator.getCurrentPosition();
 
       for (final place in data) {
-        place.distance =
-            Geolocator.distanceBetween(
+        place.distance = Geolocator.distanceBetween(
           currentPosition.latitude,
           currentPosition.longitude,
           place.lat,
@@ -45,15 +38,9 @@ class _SavedPlacesScreenState
         );
       }
 
-      data.sort(
-        (a, b) => a.distance.compareTo(
-          b.distance,
-        ),
-      );
+      data.sort((a, b) => a.distance.compareTo(b.distance));
     } catch (e) {
-      debugPrint(
-        'Mesafe hesaplanamadı: $e',
-      );
+      debugPrint('Mesafe hesaplanamadı: $e');
     }
 
     setState(() {
@@ -61,41 +48,24 @@ class _SavedPlacesScreenState
     });
   }
 
-  Future<void> _deletePlace(
-    PlaceModel place,
-  ) async {
-    final result =
-        await showDialog<bool>(
+  Future<void> _deletePlace(PlaceModel place) async {
+    final result = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text(
-          'Kaydı Sil',
-        ),
-        content: Text(
-          '${place.name} silinsin mi?',
-        ),
+        title: const Text('Kaydı Sil'),
+        content: Text('${place.name} silinsin mi?'),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(
-                context,
-                false,
-              );
+              Navigator.pop(context, false);
             },
-            child: const Text(
-              'Vazgeç',
-            ),
+            child: const Text('Vazgeç'),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(
-                context,
-                true,
-              );
+              Navigator.pop(context, true);
             },
-            child: const Text(
-              'Sil',
-            ),
+            child: const Text('Sil'),
           ),
         ],
       ),
@@ -103,17 +73,12 @@ class _SavedPlacesScreenState
 
     if (result != true) return;
 
-    await DatabaseHelper.instance
-        .deletePlace(
-      place.id!,
-    );
+    await DatabaseHelper.instance.deletePlace(place.id!);
 
     await loadPlaces();
   }
 
-  IconData _getIcon(
-    String category,
-  ) {
+  IconData _getIcon(String category) {
     switch (category) {
       case 'Yeme-İçme':
         return Icons.restaurant;
@@ -138,9 +103,7 @@ class _SavedPlacesScreenState
     }
   }
 
-  String _distanceText(
-    double distance,
-  ) {
+  String _distanceText(double distance) {
     if (distance < 1000) {
       return '${distance.toInt()} m';
     }
@@ -149,96 +112,62 @@ class _SavedPlacesScreenState
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    final filteredPlaces =
-        selectedCategory == 'Hepsi'
-            ? places
-            : places.where((p) {
-                return p.category ==
-                    selectedCategory;
-              }).toList();
+  Widget build(BuildContext context) {
+    final filteredPlaces = selectedCategory == 'Hepsi'
+        ? places
+        : places.where((p) {
+            return p.category == selectedCategory;
+          }).toList();
 
     return SafeArea(
       child: Padding(
-        padding:
-            const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Kayıtlı Yerler',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(
-              height: 16,
-            ),
+            const SizedBox(height: 16),
 
-            DropdownButtonFormField<
-                String>(
-              value:
-                  selectedCategory,
-              decoration:
-                  InputDecoration(
+            DropdownButtonFormField<String>(
+              value: selectedCategory,
+              decoration: InputDecoration(
                 filled: true,
-                fillColor:
-                    Colors.white,
-                border:
-                    OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(
-                    12,
-                  ),
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              items: [
-                'Hepsi',
-                'Yeme-İçme',
-                'Sağlık',
-                'İbadet',
-                'Spor',
-                'Park',
-                'Alışveriş',
-                'Diğer',
-              ].map((e) {
-                return DropdownMenuItem(
-                  value: e,
-                  child: Text(e),
-                );
-              }).toList(),
+              items:
+                  [
+                    'Hepsi',
+                    'Yeme-İçme',
+                    'Sağlık',
+                    'İbadet',
+                    'Spor',
+                    'Park',
+                    'Alışveriş',
+                    'Diğer',
+                  ].map((e) {
+                    return DropdownMenuItem(value: e, child: Text(e));
+                  }).toList(),
               onChanged: (value) {
                 setState(() {
-                  selectedCategory =
-                      value!;
+                  selectedCategory = value!;
                 });
               },
             ),
 
-            const SizedBox(
-              height: 16,
-            ),
+            const SizedBox(height: 16),
 
             Container(
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 10,
-              ),
-              decoration:
-                  BoxDecoration(
-                color:
-                    Colors.grey.shade200,
-                borderRadius:
-                    BorderRadius.circular(
-                  8,
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(8),
               ),
               child: const Row(
                 children: [
@@ -246,235 +175,162 @@ class _SavedPlacesScreenState
                     width: 40,
                     child: Text(
                       'Kat.',
-                      style: TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   Expanded(
                     flex: 4,
                     child: Text(
                       'Yer',
-                      style: TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   Expanded(
                     flex: 3,
                     child: Text(
                       'Konum',
-                      style: TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                   SizedBox(
                     width: 70,
                     child: Text(
                       'Mesafe',
-                      textAlign:
-                          TextAlign.end,
-                      style: TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                      textAlign: TextAlign.end,
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(
-              height: 8,
-            ),
+            const SizedBox(height: 8),
 
             Expanded(
-              child:
-                  filteredPlaces.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'Kayıtlı yer bulunamadı',
-                          ),
-                        )
-                      : ListView.separated(
-                          itemCount:
-                              filteredPlaces
-                                  .length,
-                          separatorBuilder:
-                              (_, __) =>
-                                  const Divider(
-                            height: 1,
-                          ),
-                          itemBuilder:
-                              (
-                            context,
-                            index,
-                          ) {
-                            final place =
-                                filteredPlaces[
-                                    index];
+              child: filteredPlaces.isEmpty
+                  ? const Center(child: Text('Kayıtlı yer bulunamadı'))
+                  : ListView.separated(
+                      itemCount: filteredPlaces.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final place = filteredPlaces[index];
 
-                            return Dismissible(
-  key: Key(
-    place.id.toString(),
-  ),
+                        return Dismissible(
+                          key: Key(place.id.toString()),
 
-  direction:
-      DismissDirection.endToStart,
+                          direction: DismissDirection.endToStart,
 
-  confirmDismiss: (_) async {
+                          confirmDismiss: (_) async {
+                            final result = await showDialog<bool>(
+                              context: context,
 
-    final result =
-        await showDialog<bool>(
+                              builder: (_) => AlertDialog(
+                                title: const Text('Kaydı Sil'),
 
-      context: context,
+                                content: Text('${place.name} silinsin mi?'),
 
-      builder: (_) => AlertDialog(
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context, false);
+                                    },
 
-        title: const Text(
-          'Kaydı Sil',
-        ),
+                                    child: const Text('Vazgeç'),
+                                  ),
 
-        content: Text(
-          '${place.name} silinsin mi?',
-        ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context, true);
+                                    },
 
-        actions: [
+                                    child: const Text('Sil'),
+                                  ),
+                                ],
+                              ),
+                            );
 
-          TextButton(
-
-            onPressed: () {
-
-              Navigator.pop(
-                context,
-                false,
-              );
-            },
-
-            child: const Text(
-              'Vazgeç',
-            ),
-          ),
-
-          ElevatedButton(
-
-            onPressed: () {
-
-              Navigator.pop(
-                context,
-                true,
-              );
-            },
-
-            child: const Text(
-              'Sil',
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return result ?? false;
-  },
-
-  onDismissed: (_) async {
-
-    await DatabaseHelper.instance
-        .deletePlace(
-      place.id!,
-    );
-
-    await loadPlaces();
-  },
-
-  background: Container(
-
-    color: Colors.red,
-
-    alignment:
-        Alignment.centerRight,
-
-    padding:
-        const EdgeInsets.only(
-      right: 24,
-    ),
-
-    child: const Icon(
-      Icons.delete,
-      color: Colors.white,
-    ),
-  ),
-
-  child: Padding(
-    padding:
-        const EdgeInsets.symmetric(
-      horizontal: 8,
-      vertical: 14,
-    ),
-
-    child: Row(
-      children: [
-
-        SizedBox(
-          width: 40,
-          child: Icon(
-            _getIcon(
-              place.category,
-            ),
-            size: 22,
-          ),
-        ),
-
-        Expanded(
-          flex: 4,
-          child: Text(
-            place.name,
-            maxLines: 1,
-            overflow:
-                TextOverflow.ellipsis,
-          ),
-        ),
-
-        Expanded(
-          flex: 3,
-          child: Text(
-            '${place.district}/${place.city}',
-            maxLines: 1,
-            overflow:
-                TextOverflow.ellipsis,
-            style:
-                const TextStyle(
-              color:
-                  Colors.black54,
-            ),
-          ),
-        ),
-
-        SizedBox(
-          width: 70,
-          child: Text(
-            _distanceText(
-              place.distance,
-            ),
-            textAlign:
-                TextAlign.end,
-            style:
-                const TextStyle(
-              fontWeight:
-                  FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-);
+                            return result ?? false;
                           },
-                        ),
+
+                          onDismissed: (_) async {
+                            await DatabaseHelper.instance.deletePlace(
+                              place.id!,
+                            );
+
+                            await loadPlaces();
+                          },
+
+                          background: Container(
+                            color: Colors.red,
+
+                            alignment: Alignment.centerRight,
+
+                            padding: const EdgeInsets.only(right: 24),
+
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                            ),
+                          ),
+
+                          child: InkWell(
+                            onTap: () {
+                              MapLauncherService.openPlace(place);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 14,
+                              ),
+
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 40,
+                                    child: Icon(
+                                      _getIcon(place.category),
+                                      size: 22,
+                                    ),
+                                  ),
+
+                                  Expanded(
+                                    flex: 4,
+                                    child: Text(
+                                      place.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+
+                                  Expanded(
+                                    flex: 3,
+                                    child: Text(
+                                      '${place.district}/${place.city}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+
+                                  SizedBox(
+                                    width: 70,
+                                    child: Text(
+                                      _distanceText(place.distance),
+                                      textAlign: TextAlign.end,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
