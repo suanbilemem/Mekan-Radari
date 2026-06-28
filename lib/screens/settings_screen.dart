@@ -1,117 +1,394 @@
+import 'package:provider/provider.dart';
+import '../theme_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../services/settings_service.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({
+    super.key,
+  });
 
   @override
   State<SettingsScreen> createState() =>
       _SettingsScreenState();
 }
 
-class _SettingsScreenState
-    extends State<SettingsScreen> {
 
-  double distance = 500;
+  class _SettingsScreenState
+      extends State<SettingsScreen> {
 
-  @override
-  void initState() {
-    super.initState();
-    loadDistance();
-  }
+    double? distance;
+    bool? sound;
+    bool? vibration;
 
-  Future<void> loadDistance() async {
+    final _settingsService = SettingsService.instance;
 
-    final prefs =
-        await SharedPreferences.getInstance();
+    @override
+    void initState() {
+      super.initState();
 
-    setState(() {
+      loadSettings();
+    }
 
-      distance =
-          prefs.getDouble(
-            'trigger_distance',
-          ) ??
-          500;
-    });
-  }
+    Future<void> loadSettings() async {
+      final d = await _settingsService.getDistance();
+      final s = await _settingsService.getSound();
+      final v = await _settingsService.getVibration();
 
-  Future<void> saveDistance(
-    double value,
-  ) async {
+      setState(() {
+        distance = d;
+        sound = s;
+        vibration = v;
+      });
+    }
 
-    final prefs =
-        await SharedPreferences.getInstance();
 
-    await prefs.setDouble(
-      'trigger_distance',
-      value,
-    );
-  }
 
-  @override
-  Widget build(BuildContext context) {
 
-    return SafeArea(
-      child: Padding(
+    Widget sectionTitle(
+      String text,
+      IconData icon,
+    ){
+
+      return Padding(
         padding:
-            const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
+            const EdgeInsets.only(
+              top:20,
+              bottom:10,
+            ),
 
-            const Text(
-              'Ayarlar',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+        child: Row(
+
+          children:[
+
+            Icon(
+              icon,
+              color:Colors.red,
             ),
 
             const SizedBox(
-              height: 30,
+              width:10,
             ),
 
-            const Text(
-              'Uyarı Mesafesi',
+            Text(
+              text,
               style:
-                  TextStyle(
-                fontSize: 20,
-              ),
-            ),
-
-            Slider(
-              value: distance,
-              min: 100,
-              max: 2000,
-              divisions: 19,
-              label:
-                  '${distance.toInt()} m',
-              onChanged: (v) async {
-
-                setState(() {
-                  distance = v;
-                });
-
-                await saveDistance(v);
-              },
-            ),
-
-            Center(
-              child: Text(
-                '${distance.toInt()} m',
-                style:
-                    const TextStyle(
-                  fontSize: 32,
+                const TextStyle(
+                  fontSize:20,
                   fontWeight:
-                      FontWeight.bold,
+                    FontWeight.bold,
                 ),
-              ),
             ),
+
           ],
+
         ),
-      ),
+
+      );
+
+    }
+
+
+
+  Widget settingCard(
+    Widget child,
+  ){
+
+    return Card(
+
+      elevation:2,
+
+      shape:
+        RoundedRectangleBorder(
+          borderRadius:
+            BorderRadius.circular(18),
+        ),
+
+      child:
+        Padding(
+
+          padding:
+            const EdgeInsets.all(16),
+
+          child:child,
+
+        ),
+
+    );
+
+  }
+
+
+
+  Widget switchRow(
+    String title,
+    bool value,
+    Function(bool) onChanged,
+  ){
+
+    return Row(
+
+      mainAxisAlignment:
+        MainAxisAlignment.spaceBetween,
+
+      children:[
+
+        Text(
+          title,
+          style:
+            const TextStyle(
+              fontSize:17,
+            ),
+        ),
+
+
+        Switch(
+
+          value:value,
+
+          activeThumbColor: Colors.red,
+
+          onChanged:onChanged,
+
+        ),
+
+      ],
+
+    );
+
+  }
+
+
+
+
+@override
+Widget build(BuildContext context) {
+
+  if (distance == null ||
+      sound == null ||
+      vibration == null) {
+
+    return const Center(
+      child: CircularProgressIndicator(),
     );
   }
+
+
+    return SafeArea(
+
+      child:
+
+      ListView(
+
+        padding:
+          const EdgeInsets.all(20),
+
+
+        children:[
+
+
+          const Text(
+            'Ayarlar',
+
+            style:
+              TextStyle(
+                fontSize:32,
+                fontWeight:
+                  FontWeight.bold,
+              ),
+          ),
+
+
+
+          // GÖRÜNÜM
+
+          sectionTitle(
+            'Görünüm',
+            Icons.dark_mode,
+          ),
+
+
+         settingCard(
+
+  Consumer<ThemeProvider>(
+
+    builder: (context, theme, child){
+
+      return switchRow(
+
+        'Koyu Tema',
+
+        theme.darkMode,
+
+        (value){
+
+          theme.toggleTheme(value);
+
+        },
+
+      );
+
+    },
+
+  ),
+
+),
+
+
+          // RADAR
+
+          sectionTitle(
+            'Radar',
+            Icons.radar,
+          ),
+
+
+          settingCard(
+
+            Column(
+
+              crossAxisAlignment:
+                CrossAxisAlignment.start,
+
+
+              children:[
+
+
+                const Text(
+                  'Yaklaşma mesafesi',
+                  style:
+                    TextStyle(
+                      fontSize:17,
+                    ),
+                ),
+
+
+                Slider(
+
+                  value:
+                    distance ?? 100.0,
+
+                  min:
+                    100,
+
+                  max:
+                    1000,
+
+                  divisions:
+                    9,
+
+                  label:
+                    '${(distance ?? 100.0).toInt()} m',
+
+
+                  activeColor:
+                    Colors.red,
+
+
+                  onChanged:
+                    (v) async{
+
+                      setState((){
+                        distance=v;
+                      });
+                      await _settingsService.setDistance(v);
+                    },
+
+                ),
+
+
+
+                Center(
+
+                  child:
+
+                  Text(
+
+                    '${(distance ?? 100.0).toInt()} m',
+
+                    style:
+                      const TextStyle(
+
+                        fontSize:28,
+
+                        fontWeight:
+                          FontWeight.bold,
+
+                      ),
+
+                  ),
+
+                ),
+
+
+              ],
+
+            ),
+
+          ),
+
+
+
+
+
+          // BİLDİRİM
+
+          sectionTitle(
+            'Bildirim',
+            Icons.notifications,
+          ),
+
+
+          settingCard(
+
+            Column(
+
+              children:[
+
+
+                switchRow(
+
+                  'Ses',
+
+                  sound ?? true,
+                  (v){
+                    setState((){
+                      sound=v;
+                    });
+                    _settingsService.setSound(v);
+                  },
+
+                ),
+
+
+
+                switchRow(
+
+                  'Titreşim',
+
+                  vibration ?? true,
+                  (v){
+                    setState((){
+                      vibration=v;
+                    });
+                    _settingsService.setVibration(v);
+                  },
+
+                ),
+
+
+              ],
+
+            ),
+
+          ),
+
+        ],
+
+      ),
+
+    );
+
+  }
+
 }

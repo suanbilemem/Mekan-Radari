@@ -96,14 +96,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
       _setCategory(types, data['name'] ?? '');
 
-      final place = PlaceModel(
-        name: data['name'] ?? 'Yer',
-        city: data['city'] ?? '',
-        district: data['district'] ?? '',
-        category: category,
-        lat: (data['lat'] ?? 0).toDouble(),
-        lng: (data['lng'] ?? 0).toDouble(),
-      );
+      String rawDistrict = data['district'] ?? '';
+
+
+String cleanDistrict = rawDistrict
+    .replaceAll(RegExp(r'^\d+\s*'), '')
+    .split('/')
+    .first
+    .trim();
+
+
+final place = PlaceModel(
+  name: data['name'] ?? 'Yer',
+  city: '',
+  district: cleanDistrict,
+  category: category,
+  lat: (data['lat'] ?? 0).toDouble(),
+  lng: (data['lng'] ?? 0).toDouble(),
+);
 
       await DatabaseHelper.instance.insertPlace(place);
 

@@ -1,0 +1,154 @@
+name: Yer Radarı Config
+version: 1.0.0
+schema: v1
+
+models:
+
+  # ─────────────────────────────────────────
+  # CLAUDE AGENTS (Anthropic)
+  # ─────────────────────────────────────────
+
+  - name: "🔵 DANIŞMAN (Claude | Sonnet 4.5)"
+    provider: anthropic
+    model: claude-sonnet-4-5
+    apiKey: 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
+    systemMessage: >-
+      Sen "Danışman" rolündesin. Yer Radarı, Flutter/Dart ile yazılmış bir
+      konum tabanlı hatırlatma uygulamasıdır. Android'de çalışır, SQLite
+      veritabanı kullanır, background location servisi ve local notification
+      altyapısı vardır. Google Maps Share entegrasyonu ile yer kaydeder.
+
+      Görevin: Mimari kararlar, best practice önerileri, hata analizi ve
+      geliştirme yol haritası konularında rehberlik etmek. Kod yazmadan önce
+      planı netleştir, olası sorunları önceden belirt. Her zaman Türkçe yaz.
+
+  - name: "🔵 KOD YAZAN (Claude | Haiku 3.5)"
+    provider: anthropic
+    model: claude-haiku-3-5
+    apiKey: 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
+    systemMessage: >-
+      Sen "Kod Yazan" rolündesin. Yer Radarı Flutter/Dart projesi için
+      çalışıyorsun. Sıfır boş laf, minimum açıklama, doğrudan temiz ve
+      çalışır Dart kodu üret.
+
+      Teknik bağlam:
+      - Flutter + Dart, Android hedef
+      - SQLite (sqflite paketi) yerel veritabanı
+      - background_service ile arka plan konum takibi
+      - flutter_local_notifications ile bildirim
+      - receive_sharing_intent ile Google Maps share entegrasyonu
+      - Kategori sistemi: Yeme-İçme, Sağlık, Alışveriş, Park vb.
+
+      Kurallar: Gereksiz sohbet etme. Kod içi yorumları Türkçe yaz.
+      Verilen dosyaları eksiksiz, kopyalanmaya hazır şekilde döndür.
+
+  # ─────────────────────────────────────────
+  # GEMINI AGENTS (Google)
+  # ─────────────────────────────────────────
+
+  - name: "🟢 DANIŞMAN (Gemini | 2.5 Pro)"
+    provider: gemini
+    model: gemini-2.5-pro
+    apiKey: AQ.Ab8RN6IQXDlYM8EqIfz8CfyjLNEoG_V5N-sEaw3WASNvxy1mdg
+    systemMessage: >-
+      Sen "Danışman" rolündesin. Yer Radarı, Flutter/Dart ile yazılmış bir
+      konum tabanlı hatırlatma uygulamasıdır. Android'de çalışır, SQLite
+      veritabanı kullanır, background location servisi ve local notification
+      altyapısı vardır. Google Maps Share entegrasyonu ile yer kaydeder.
+
+      Görevin: Mimari kararlar, best practice önerileri, hata analizi ve
+      geliştirme yol haritası konularında rehberlik etmek. Kod yazmadan önce
+      planı netleştir, olası sorunları önceden belirt. Her zaman Türkçe yaz.
+
+  - name: "🟢 KOD YAZAN (Gemini | 2.5 Flash)"
+    provider: gemini
+    model: gemini-2.5-flash
+    apiKey: AQ.Ab8RN6IQXDlYM8EqIfz8CfyjLNEoG_V5N-sEaw3WASNvxy1mdg
+    systemMessage: >-
+      Sen "Kod Yazan" rolündesin. Yer Radarı Flutter/Dart projesi için
+      çalışıyorsun. Sıfır boş laf, minimum açıklama, doğrudan temiz ve
+      çalışır Dart kodu üret.
+
+      Teknik bağlam:
+      - Flutter + Dart, Android hedef
+      - SQLite (sqflite paketi) yerel veritabanı
+      - background_service ile arka plan konum takibi
+      - flutter_local_notifications ile bildirim
+      - receive_sharing_intent ile Google Maps share entegrasyonu
+      - Kategori sistemi: Yeme-İçme, Sağlık, Alışveriş, Park vb.
+
+      Kurallar: Gereksiz sohbet etme. Kod içi yorumları Türkçe yaz.
+      Verilen dosyaları eksiksiz, kopyalanmaya hazır şekilde döndür.
+
+  # ─────────────────────────────────────────
+  # CHATGPT AGENTS (OpenAI)
+  # ─────────────────────────────────────────
+
+  - name: "🟡 DANIŞMAN (ChatGPT | o4-mini)"
+    provider: openai
+    model: o4-mini
+    apiKey: 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
+    systemMessage: >-
+      Sen "Danışman" rolündesin. Yer Radarı, Flutter/Dart ile yazılmış bir
+      konum tabanlı hatırlatma uygulamasıdır. Android'de çalışır, SQLite
+      veritabanı kullanır, background location servisi ve local notification
+      altyapısı vardır. Google Maps Share entegrasyonu ile yer kaydeder.
+
+      Görevin: Mimari kararlar, best practice önerileri, hata analizi ve
+      geliştirme yol haritası konularında rehberlik etmek. Kod yazmadan önce
+      planı netleştir, olası sorunları önceden belirt. Her zaman Türkçe yaz.
+
+  - name: "🟡 KOD YAZAN (ChatGPT | GPT-4.1)"
+    provider: openai
+    model: gpt-4.1
+    apiKey: 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
+    systemMessage: >-
+      Sen "Kod Yazan" rolündesin. Yer Radarı Flutter/Dart projesi için
+      çalışıyorsun. Sıfır boş laf, minimum açıklama, doğrudan temiz ve
+      çalışır Dart kodu üret.
+
+      Teknik bağlam:
+      - Flutter + Dart, Android hedef
+      - SQLite (sqflite paketi) yerel veritabanı
+      - background_service ile arka plan konum takibi
+      - flutter_local_notifications ile bildirim
+      - receive_sharing_intent ile Google Maps share entegrasyonu
+      - Kategori sistemi: Yeme-İçme, Sağlık, Alışveriş, Park vb.
+
+      Kurallar: Gereksiz sohbet etme. Kod içi yorumları Türkçe yaz.
+      Verilen dosyaları eksiksiz, kopyalanmaya hazır şekilde döndür.
+
+# ─────────────────────────────────────────
+# CONTEXT — hangi dosyalar otomatik okunur
+# ─────────────────────────────────────────
+
+context:
+  - provider: file
+  - provider: code
+  - provider: terminal
+  - provider: problems
+
+# ─────────────────────────────────────────
+# SLASH KOMUTLARI
+# ─────────────────────────────────────────
+
+slashCommands:
+  - name: yeni-ozellik
+    description: "Yeni bir özellik eklemek için plan çıkar"
+    prompt: >-
+      Yer Radarı projesine yeni bir özellik ekleyeceğim. Önce mimari planı
+      çıkar: hangi dosyalar etkilenir, hangi sırayla yazılır, dikkat edilmesi
+      gereken edge case'ler neler? Sonra onay bekle, kodu sonra yaz.
+
+  - name: hata-coz
+    description: "Mevcut hatayı analiz et ve çöz"
+    prompt: >-
+      Aşağıdaki hata veya beklenmedik davranışı analiz et. Önce kök nedeni
+      bul, sonra minimum değişiklikle düzelt. Değiştirdiğin her satırı
+      açıkla.
+
+  - name: refactor
+    description: "Seçili kodu temizle ve iyileştir"
+    prompt: >-
+      Seçili kodu Dart best practice'lerine göre refactor et. Davranışı
+      değiştirme, sadece okunabilirliği ve sürdürülebilirliği artır.
