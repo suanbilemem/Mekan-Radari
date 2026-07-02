@@ -7,7 +7,7 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 import '../database_helper.dart';
 import '../models/place_model.dart';
-import '../widgets/radar_circle.dart';
+import '../widgets/radar_button.dart';
 
 import 'saved_places_screen.dart';
 import 'settings_screen.dart';
@@ -24,19 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription? _intentSubscription;
 
   bool _loading = false;
-  bool _saved = false;
-
-  String placeName = 'Google Haritalar’dan Yer Paylaşın';
-
-  String city = '';
-  String district = '';
-
   String category = 'Diğer';
-
   IconData categoryIcon = Icons.place;
-
-  double lat = 0;
-  double lng = 0;
 
   int _currentIndex = 0;
   int _savedPlacesRefreshKey = 0;
@@ -58,7 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
       (value) {
         if (value.isNotEmpty) {
           final text = value.first.path.toString();
-
           _resolvePlace(text);
         }
       },
@@ -74,61 +62,49 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _resolvePlace(String text) async {
     setState(() {
       _loading = true;
-      _saved = false;
+      _currentIndex = 0; // İşlem yapılırken ana ekrana dön ve yükleniyor çarkını göster
     });
 
     try {
       final response = await http.post(
         Uri.parse('https://mekan-radari.onrender.com/resolve'),
-
         headers: {'Content-Type': 'application/json'},
-
         body: jsonEncode({'text': text}),
       );
 
       final data = jsonDecode(response.body);
 
       debugPrint('DISTRICT: ${data['district']}');
-
       debugPrint('CITY: ${data['city']}');
 
       final List types = data['types'] ?? [];
-
       _setCategory(types, data['name'] ?? '');
 
       String rawDistrict = data['district'] ?? '';
+      String cleanDistrict = rawDistrict
+          .replaceAll(RegExp(r'^\d+\s*'), '')
+          .split('/')
+          .first
+          .trim();
 
-
-String cleanDistrict = rawDistrict
-    .replaceAll(RegExp(r'^\d+\s*'), '')
-    .split('/')
-    .first
-    .trim();
-
-
-final place = PlaceModel(
-  name: data['name'] ?? 'Yer',
-  city: '',
-  district: cleanDistrict,
-  category: category,
-  lat: (data['lat'] ?? 0).toDouble(),
-  lng: (data['lng'] ?? 0).toDouble(),
-);
+      final place = PlaceModel(
+        name: data['name'] ?? 'Yer',
+        city: data['city'] ?? '',
+        district: cleanDistrict,
+        category: category,
+        lat: (data['lat'] ?? 0).toDouble(),
+        lng: (data['lng'] ?? 0).toDouble(),
+      );
 
       await DatabaseHelper.instance.insertPlace(place);
-
       await NotificationService.instance.showSavedNotification(place);
 
       ReceiveSharingIntent.instance.reset();
 
       _showSavedPlacesAfterShareSave();
-
-      return;
     } catch (e) {
       debugPrint(e.toString());
-
       if (!mounted) return;
-
       setState(() {
         _loading = false;
       });
@@ -137,12 +113,10 @@ final place = PlaceModel(
 
   void _showSavedPlacesAfterShareSave() {
     if (!mounted) return;
-
     setState(() {
       _currentIndex = 1;
       _savedPlacesRefreshKey++;
       _loading = false;
-      _saved = true;
     });
   }
 
@@ -290,96 +264,107 @@ final place = PlaceModel(
     }
   }
 
-  Future<void> _savePlace() async {
-    if (placeName == 'Google Haritalar’dan Yer Paylaşın') {
-      return;
-    }
-
-    final place = PlaceModel(
-      name: placeName,
-
-      city: city,
-
-      district: district,
-
-      category: category,
-
-      lat: lat,
-
-      lng: lng,
-    );
-
-    await DatabaseHelper.instance.insertPlace(place);
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$placeName kaydedildi'),
-
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    setState(() {
-      _saved = true;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final screens = [
+    // Arayüzün anlık durumlara (loading vb.) tepki vermesi için ekranları burada build ediyoruz
+    final List<Widget> currentScreens = [
       _buildHome(),
-
       SavedPlacesScreen(key: ValueKey(_savedPlacesRefreshKey)),
-
       const SettingsScreen(),
     ];
 
     return Scaffold(
-      body: screens[_currentIndex],
-
+      backgroundColor: Colors.white, // Bembeyaz, temiz arka plan
+      body: currentScreens[_currentIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-
         onDestinationSelected: (i) {
           setState(() {
             _currentIndex = i;
           });
         },
-
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Ana Ekran'),
-
           NavigationDestination(icon: Icon(Icons.list), label: 'Kayıtlı'),
-
           NavigationDestination(icon: Icon(Icons.settings), label: 'Ayarlar'),
         ],
       ),
     );
   }
 
-  Widget _buildHome() {
-    return SafeArea(
-      child: Center(
-        child: _loading
-            ? const CircularProgressIndicator()
-            : RadarCircle(
-                saved: _saved,
-
-                onTap: _savePlace,
-
-                placeName: placeName,
-
-                city: city,
-
-                district: district,
-
-                category: category,
-
-                categoryIcon: categoryIcon,
+ Widget _buildHome() {
+  return SafeArea(
+    child: _loading
+        ? const Center(
+            // Yüklenme kısmı aynı kalıyor...
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.green)),
+                SizedBox(height: 16),
+                Text('Haritalardan gelen yer kaydediliyor...', style: TextStyle(color: Colors.black54)),
+              ],
+            ),
+          )
+        : Column(
+            children: [
+              const Spacer(), // Üstten boşluk bırakarak radarı merkeze doğru iter
+              
+              const RadarButton(), // 1. BÖLÜM: Büyüttüğümüz Radar Butonu
+              
+              const Spacer(), // Radar ile Görev kutucuğu arasına esnek boşluk
+              
+              // 2. BÖLÜM: Swarm Tarzı Görev Kutucuğu
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.stars, color: Colors.green),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Haftalık Görev',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Bugün 3 yeni mekan keşfet!',
+                              style: TextStyle(color: Colors.black54, fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                    ],
+                  ),
+                ),
               ),
-      ),
-    );
-  }
+            ],
+          ),
+  );
+}
 }

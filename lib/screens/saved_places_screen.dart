@@ -6,6 +6,18 @@ import '../database_helper.dart';
 import '../models/place_model.dart';
 import '../services/map_launcher_service.dart';
 
+// ─────────────────────────────────────────
+// Yer adlarını tutarlı şekilde gösterir:
+// "KARACAAHMET SULTAN" → "Karacaahmet Sultan"
+// ─────────────────────────────────────────
+String toTitleCase(String text) {
+  if (text.isEmpty) return text;
+  return text.split(' ').map((word) {
+    if (word.isEmpty) return word;
+    return word[0].toUpperCase() + word.substring(1).toLowerCase();
+  }).join(' ');
+}
+
 class SavedPlacesScreen extends StatefulWidget {
   const SavedPlacesScreen({super.key});
 
@@ -82,7 +94,6 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
     return '${(distance / 1000).toStringAsFixed(1)} km';
   }
 
-  // 📝 İstediğin Özel Tasarımlı Not Ekleme Penceresi
   void _showNoteDialog(
   BuildContext context,
   PlaceModel place,
@@ -326,7 +337,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                       )
                     : ListView.separated(
                       itemCount: filteredPlaces.length,
-                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      separatorBuilder: (_,_) => const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final place = filteredPlaces[index];
 
@@ -335,7 +346,6 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                           endActionPane: ActionPane(
                             motion: const ScrollMotion(),
                             children: [
-                              // 1. 📝 NOT BUTONU
                               SlidableAction(
                                 onPressed: (context) {
                                   _showNoteDialog(context, place);
@@ -345,7 +355,6 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                 icon: Icons.note,
                                 label: 'Not',
                               ),
-                              // 2. 📍 KONUM BUTONU
                               SlidableAction(
                                 onPressed: (context) {
                                   MapLauncherService.openPlace(place);
@@ -355,7 +364,6 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                 icon: Icons.location_on,
                                 label: 'Konum',
                               ),
-                              // 3. 🗑 SİL BUTONU
                               SlidableAction(
                                 onPressed: (context) async {
                                   final result = await showDialog<bool>(
@@ -366,13 +374,13 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                       actions: [
                                         TextButton(
                                           onPressed: () {
-                                            Navigator.pop(dialogContext, false); // dialogContext ile düzeldi
+                                            Navigator.pop(dialogContext, false);
                                           },
                                           child: const Text('Vazgeç'),
                                         ),
                                         ElevatedButton(
                                           onPressed: () {
-                                            Navigator.pop(dialogContext, true); // dialogContext ile düzeldi
+                                            Navigator.pop(dialogContext, true);
                                           },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.red,
@@ -399,9 +407,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                             ],
                           ),
                           child: InkWell(
-                            onTap: () {
-                              MapLauncherService.openPlace(place);
-                            },
+                            onTap: () {},
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -419,7 +425,7 @@ class _SavedPlacesScreenState extends State<SavedPlacesScreen> {
                                   Expanded(
                                     flex: 4,
                                     child: Text(
-                                      place.name,
+                                      toTitleCase(place.name),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),

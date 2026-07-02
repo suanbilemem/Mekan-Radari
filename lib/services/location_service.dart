@@ -180,4 +180,46 @@ class LocationService {
       debugPrint('❌ Mesafe kontrol hatası: $e');
     }
   }
+
+  // ─────────────────────────────────────────
+  // TALEP ÜZERİNE RADAR (On-Demand Radar)
+  // Ana ekrandaki dairesel butona basıldığında çağrılır.
+  // Arka plan döngüsüyle hiçbir ilişkisi yok — tek seferlik,
+  // bağımsız bir GPS okuması yapar ve en yakın 5 yeri
+  // mesafeye göre sıralı döndürür. Hiçbir bildirim göndermez,
+  // hiçbir kilit/state güncellemez — sadece okur ve sıralar.
+  // ─────────────────────────────────────────
+
+  Future<List<PlaceModel>> getNearestFive() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+
+      final places = await DatabaseHelper.instance.getPlaces();
+
+      if (places.isEmpty) {
+        return [];
+      }
+
+      final withDistance = places.map((place) {
+        final distance = Geolocator.distanceBetween(
+          position.latitude,
+          position.longitude,
+          place.lat,
+          place.lng,
+        );
+        return MapEntry(place, distance);
+      }).toList();
+
+      withDistance.sort((a, b) => a.value.compareTo(b.value));
+
+      return withDistance.take(5).map((entry) => entry.key).toList();
+    } catch (e) {
+      debugPrint('❌ getNearestFive HATA: $e');
+      return [];
+    }
+  }
 }
